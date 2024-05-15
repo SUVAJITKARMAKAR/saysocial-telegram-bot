@@ -6,7 +6,7 @@ const userSchema = mongoose.Schema({
       telegramID: {
             type: String,
             required: true,
-            unique: true
+            unique: true,
       },
 
       firstName: {
@@ -24,10 +24,10 @@ const userSchema = mongoose.Schema({
             required: true
       },
 
-      userName: {
+      username: {
             type: String,
             required: true,
-            unique: true
+            unique: false,
       },
 
       promptTokens: {
@@ -39,8 +39,9 @@ const userSchema = mongoose.Schema({
             type: Number,
             required: false
       },
+
 }, {timestamps: true});
 
 
 //  EXPORTING THE MODULE
-export default mongoose.model('User', userSchema);
+export default mongoose.model('user', userSchema);

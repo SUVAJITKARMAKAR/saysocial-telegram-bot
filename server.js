@@ -1,5 +1,5 @@
 // IMPORTING THE REQUIRED FILE DIRECTORIES IN THE WORK SPACE
-import { Telegraf } from "telegraf";
+import { Telegraf, Markup } from "telegraf";
 import { message } from 'telegraf/filters';
 import userModel from './src/models/user.js';
 import eventModel from './src/models/Event.js';
@@ -7,7 +7,7 @@ import connectDb from './src/config/database.js';
 import { connect } from "mongoose";
 import OpenAI from "openai";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import user from "./src/models/user.js";
+// import user from "./src/models/user.js";
 
 // CREATING AN INSTANCE OF THE BOT
 const bot = new Telegraf(process.env.BOT_TOKEN);
@@ -31,12 +31,58 @@ try {
 
 // HIGHER ORDER ~ Priority value is highest.
 // INITIATING THE BOT USING THE START COMMAND 
-bot.start(async(ctx) => {
+// bot.start(async(ctx) => {
+
+//       // SAVING THE USER INFORMATION FROM THE CONTEXT 
+//       const from = ctx.update.message.from;
+
+//       //  ERROR HANDLING 
+//       try {
+//             await userModel.findOneAndUpdate({
+//                   telegramID: from.id // A telegram id will be created and if created it will be updated further.
+//             },
+
+//             {     // Defining the database Schema and inserting the values within the fields.
+//                   $setOnInsert: {
+//                         firstName: from.first_name,
+//                         lastName: from.last_name,
+//                         isBot: from.is_bot,
+//                         username: from.username
+//                   }
+//             },
+      
+//             {
+//                   upsert: true,
+//                   new: true
+//             }); // This creates the model only when the user has initiated the conversation with the bot. This method uses a parameter called 'upsert' that will be checking  which is created if it's not there and if its there then it will be simply updated.
+
+//                   // STATING THE REPLY FROM THE BOT -> USER
+//                   await ctx.reply(
+//                         `Hey there! ${from.first_name}😁, Welcome to this chat💭. I will be your host and guide in writing all your social-media posts✍🏻.\nLet me know what are you upto or what have you already done and I will be considering everything while creating the best post for you🧭.\nLet's get viral on social media.🧲`
+//                   );
+//       } catch(err) {
+//             // LOGGING THE ERROR 
+//             console.log(err);
+//             await ctx.reply(
+//                   `Well ${from.first_name} I am having trouble chatting with you right now 🤧! Developer is sleeping 🥴.`
+//             )
+//       }
+
+
+//       //  DEBUG CONSOLE 
+//       console.log('ctx', ctx);
+//       console.log('from', from);
+
+// });
+
+bot.start(async (ctx) => {
 
       // SAVING THE USER INFORMATION FROM THE CONTEXT 
       const from = ctx.update.message.from;
+      console.log(ctx);
+      console.log('from', from);
 
-      //  ERROR HANDLING 
+      // ERROR HANDLING 
       try {
             await userModel.findOneAndUpdate({
                   telegramID: from.id // A telegram id will be created and if created it will be updated further.
@@ -47,20 +93,23 @@ bot.start(async(ctx) => {
                         firstName: from.first_name,
                         lastName: from.last_name,
                         isBot: from.is_bot,
-                        username: from.username
+                        username: from.username,
                   }
             },
-      
+
             {
                   upsert: true,
                   new: true
             }); // This creates the model only when the user has initiated the conversation with the bot. This method uses a parameter called 'upsert' that will be checking  which is created if it's not there and if its there then it will be simply updated.
 
-                  // STATING THE REPLY FROM THE BOT -> USER
-                  await ctx.reply(
-                        `Hey there! ${from.first_name}😁, Welcome to this chat💭. I will be your host and guide in writing all your social-media posts✍🏻.\nLet me know what are you upto or what have you already done and I will be considering everything while creating the best post for you🧭.\nLet's get viral on social media.🧲`
-                  );
-      } catch(err) {
+            // STATING THE REPLY FROM THE BOT -> USER
+            await ctx.reply(
+                  `Hey there! ${from.first_name}😁, Welcome to this chat💭. I will be your host and guide in writing all your social-media posts✍🏻.\nLet me know what are you upto or what have you already done and I will be considering everything while creating the best post for you🧭.\nLet's get viral on social media.🧲`,
+                  Markup.inlineKeyboard([
+                        Markup.button.callback('Menu 📜', 'show_menu')
+                  ])
+            );
+      } catch (err) {
             // LOGGING THE ERROR 
             console.log(err);
             await ctx.reply(
@@ -69,10 +118,44 @@ bot.start(async(ctx) => {
       }
 
 
-      //  DEBUG CONSOLE 
-      console.log('ctx', ctx);
-      console.log('form', from);
+});
 
+// HANDLING THE INLINE BUTTON CLICK TO SHOW MENU
+bot.action('show_menu', async (ctx) => {
+      const from = ctx.update.callback_query.from;
+
+      await ctx.reply(`Here are the available commands, ${from.first_name} 📜:`,
+            Markup.inlineKeyboard([
+                  [Markup.button.callback('/start', 'start_command')],
+                  [Markup.button.callback('/help', 'help_command')],
+                  [Markup.button.callback('/generate', 'generate_command')],
+                  [Markup.button.callback('/reset', 'reset_command')],
+                  [Markup.button.callback('Close Menu 🛑', 'hide_menu')]
+            ])
+      );
+});
+
+// HANDLING INDIVIDUAL COMMAND BUTTON CLICKS
+bot.action('start_command', async (ctx) => {
+      await ctx.reply('/start - Start the bot');
+});
+
+bot.action('help_command', async (ctx) => {
+      await ctx.reply('/help - Show help information');
+});
+
+bot.action('generate_command', async (ctx) => {
+      await ctx.reply('/generate - Generate a post');
+});
+
+bot.action('reset_command', async (ctx) => {
+      await ctx.reply('/reset - Reset all events');
+});
+
+// HANDLING THE INLINE BUTTON CLICK TO HIDE MENU
+bot.action('hide_menu', async (ctx) => {
+      const from = ctx.update.callback_query.from;
+      await ctx.deleteMessage();
 });
 
 // INTERMEDIATE ORDER ~ Priority is somewhat equal as generate command
@@ -85,6 +168,29 @@ bot.command('help', async(ctx) => {
       STEP 2 : Once I am ready you can start sharing your thoughts and I will write it down in my personal diary ✍️.\n
       STEP 3 : Once you are all caught up just type the command /generate 🚀.\n
       STEP 4 : Grab a candy and just get ready to copy and paste 😉.`)
+});
+
+// RESET COMMAND : /reset FOR RESETTING ALL USER EVENTS
+bot.command('reset', async (ctx) => {
+      const from = ctx.update.message.from;
+
+      try {
+            // DELETE ALL EVENTS FOR THE USER
+            await eventModel.deleteMany({
+                  telegramID: from.id
+            });
+
+            // CONFIRMATION MESSAGE
+            await ctx.reply(`All your events have been reset, ${from.first_name}. You can start fresh now! 🚀`);
+      } catch (err) {
+            console.log(err);
+            await ctx.reply(
+                  `Sorry ${from.first_name}, I'm having trouble resetting your events right now 🤧! Developer is sleeping 🥴.`
+            );
+      }
+
+      // DEBUGGING
+      console.log('reset command invoked by', from);
 });
 
 
@@ -185,10 +291,8 @@ bot.command('generate', async(ctx) => {
             run();
 });
 
-// GETTING THE STICKER 
-bot.on(message('sticker'), (ctx) => {
-      console.log('sticker', ctx.update.message);
-});
+
+
 
 // LOWER ORDER ~ Priority value is less then the commands
 // TRAINING THE BOT FOR RECEIVING COMMANDS FROM THE USER
