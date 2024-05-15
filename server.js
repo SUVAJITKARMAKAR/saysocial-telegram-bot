@@ -106,7 +106,7 @@ bot.start(async (ctx) => {
             await ctx.reply(
                   `Hey there! ${from.first_name}😁, Welcome to this chat💭. I will be your host and guide in writing all your social-media posts✍🏻.\nLet me know what are you upto or what have you already done and I will be considering everything while creating the best post for you🧭.\nLet's get viral on social media.🧲`,
                   Markup.inlineKeyboard([
-                        Markup.button.callback('Menu 📜', 'show_menu')
+                        Markup.button.callback('MENU 📜', 'show_menu')
                   ])
             );
       } catch (err) {
@@ -126,11 +126,11 @@ bot.action('show_menu', async (ctx) => {
 
       await ctx.reply(`Here are the available commands, ${from.first_name} 📜:`,
             Markup.inlineKeyboard([
-                  [Markup.button.callback('/start', 'start_command')],
-                  [Markup.button.callback('/help', 'help_command')],
-                  [Markup.button.callback('/generate', 'generate_command')],
-                  [Markup.button.callback('/reset', 'reset_command')],
-                  [Markup.button.callback('Close Menu 🛑', 'hide_menu')]
+                  // [Markup.button.callback('/start', 'start_command')],
+                  [Markup.button.callback('HELP', 'help_command')],
+                  [Markup.button.callback('GENERATE', 'generate_command')],
+                  [Markup.button.callback('RESET', 'reset_command')],
+                  [Markup.button.callback('❌', 'hide_menu')]
             ])
       );
 });
@@ -165,7 +165,8 @@ bot.command('help', async(ctx) => {
 
       ctx.reply(`Hello ${from.first_name} 👋. I am here to guide you though tough times 🫡. I know its hard to think and write for your each and every social-media posts 🤔. Well your personal bot is here, just follow these steps to use me properly: \n
       STEP 1 : Type the command /start to initiate me 😏. \n
-      STEP 2 : Once I am ready you can start sharing your thoughts and I will write it down in my personal diary ✍️.\n
+      STEP 2 : You will be given a menu in which a list of commands are provide to work with 📜. \n
+      STEP 3 : Once I am ready you can start sharing your thoughts and I will write it down in my personal diary ✍️.\n
       STEP 3 : Once you are all caught up just type the command /generate 🚀.\n
       STEP 4 : Grab a candy and just get ready to copy and paste 😉.`)
 });
@@ -244,9 +245,12 @@ bot.command('generate', async(ctx) => {
                   const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
                   // PREVIOUS PROMPT
-                  const prompt = `Write like human, for humans. Craft four engaging social media posts tailored for linkedin, facebook,  X and instagram audiences. Use simple language. Use given time labels just to understand the order of the events, please also do not mention the time of the events. Ensure that none of the events are missed. Combine all the events given into every single post. Each post should creatively highlight the all the events. Ensure the tone is conversational, impactful and use relevant emojis to make the post more eye catching. Focus on engaging the respective platform's audience, encouraging interactions, and focusing on driving interests on the event using proper and appropriate hashtags for making the post more seen around the world: 
-                  ${events.map((event) => event.text).join(', ')}`;
+                  // const prompt = `Write like human, for humans. Craft four engaging social media posts tailored for linkedin, facebook,  X and instagram audiences. Use simple language. Use given time labels just to understand the order of the events, please also do not mention the time of the events. Ensure that none of the events are missed. Combine all the events given into every single post. Each post should creatively highlight the all the events. Ensure the tone is conversational, impactful and use relevant emojis to make the post more eye catching. Focus on engaging the respective platform's audience, encouraging interactions, and focusing on driving interests on the event using proper and appropriate hashtags for making the post more seen around the world: 
+                  // ${events.map((event) => event.text).join(', ')}`;
 
+                  // NEW PROMPT 
+                  const prompt = `Write a human- like social media  post based on the events given for Facebook, Instagram, X and LinkedIn. Include all the events in every post. Do not miss any events given. Use relevant emoji to make the posts more eye catching and interactive. Focus on driving interests on the events by using appropriate hashtags for making the post more seen around the world : 
+                  ${events.map((event) => event.text).join(', ')}`
             
                   try {
                         const result = await model.generateContent(prompt);
@@ -276,15 +280,21 @@ bot.command('generate', async(ctx) => {
                                     console.log(result);
                               } else {
                                     // Handle the case where the response text is empty
+                                    await ctx.deleteMessage(waitingMessageID);
+                                    await ctx.deleteMessage(loadingSticker);
                                     ctx.reply(`Sorry ${from.first_name} I am unable to fetch the required results at this current moment 😓`);
                               }   
                         } else {
                               // Handle the case where the response is not available
+                              await ctx.deleteMessage(waitingMessageID);
+                              await ctx.deleteMessage(loadingSticker);
                               ctx.reply(`Sorry ${from.first_name}, the developer screwed it up somewhere 😬. Wait and comeback again 🛐!`);
                         } 
                   } catch (error) {
                         // Handle any errors that occur during the API call
-                        ctx.reply(`Uff! Fatal error encountered and developer walked away 🛠️☠️!`);
+                        await ctx.deleteMessage(waitingMessageID);
+                        await ctx.deleteMessage(loadingSticker);
+                        ctx.reply(`Uff! Fatal error encountered ☠️ and developer walked away 🛠️🚶🏻‍♂️!`);
                   }
             }
             // INITIATING THE ASYNC FUNCTION THROUGH THE run() FUNCTION.
@@ -307,7 +317,7 @@ bot.on(message('text'), async(ctx) => {
             });
 
             // STATING THE REPLY FROM BOT -> USER
-            await ctx.reply(`Got it good job 🤝. \n Just keep texting me and I will write everything down in my personal dairy 📒! \nWhenever you are ready to generate just type the command : /generate.`);
+            await ctx.reply(`NOTED🤝. \n Just keep texting me and I will write everything down in my personal dairy 📒! \nWhenever you are ready to generate just type the command : /generate.`);
 
       } catch(err) {
             console.log(err);
