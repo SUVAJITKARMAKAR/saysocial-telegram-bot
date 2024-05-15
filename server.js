@@ -86,7 +86,6 @@ bot.action('show_menu', async (ctx) => {
                   [Markup.button.callback('HELP', 'help_command')],
                   [Markup.button.callback('GENERATE', 'generate_command')],
                   [Markup.button.callback('RESET', 'reset_command')],
-                  [Markup.button.callback('STOP', 'stop_command')],
                   [Markup.button.callback('❌', 'hide_menu')]
             ])
       );
@@ -100,10 +99,6 @@ bot.action('start_command', async (ctx) => {
 bot.action('generate_command', async (ctx) => {
       await ctx.reply('/generate - Generate a post!');
 });
-
-bot.action('stop', async (ctx) => {
-      await ctx.reply('/stop - Stop the bot!')
-})
 
 // HANDLING THE INLINE BUTTON CLICK TO HIDE MENU
 bot.action('hide_menu', async (ctx) => {
@@ -149,25 +144,6 @@ bot.command('reset', async (ctx) => {
 });
 
 
-// STOP COMMAND : /stop FOR STOPPING THE BOT
-bot.command('stop', async (ctx) => {
-      const from = ctx.update.message.from;
-
-      try {
-            // CONFIRMATION MESSAGE
-            await ctx.reply(`Goodbye ${from.first_name} 👋!`);
-            await bot.stop(); // Stop the bot
-            process.exit(); // Exit the process
-      } catch (err) {
-            console.log(err);
-            await ctx.reply(
-                  `Sorry ${from.first_name}, I'm having trouble stopping the bot right now 🤧! Developer is sleeping 🥴.`
-            );
-      }
-
-      // DEBUGGING
-      console.log('stop command invoked by', from);
-});
 
 
 // HIGHER ORDER ~ Priority value high then messages
