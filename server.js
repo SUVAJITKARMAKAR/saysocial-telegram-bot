@@ -29,52 +29,8 @@ try {
       process.kill(process.pid, 'SIGTERM'); // Killing the process and ensuring a proper shut down of the bot.
 }
 
-// HIGHER ORDER ~ Priority value is highest.
-// INITIATING THE BOT USING THE START COMMAND 
-// bot.start(async(ctx) => {
 
-//       // SAVING THE USER INFORMATION FROM THE CONTEXT 
-//       const from = ctx.update.message.from;
-
-//       //  ERROR HANDLING 
-//       try {
-//             await userModel.findOneAndUpdate({
-//                   telegramID: from.id // A telegram id will be created and if created it will be updated further.
-//             },
-
-//             {     // Defining the database Schema and inserting the values within the fields.
-//                   $setOnInsert: {
-//                         firstName: from.first_name,
-//                         lastName: from.last_name,
-//                         isBot: from.is_bot,
-//                         username: from.username
-//                   }
-//             },
-      
-//             {
-//                   upsert: true,
-//                   new: true
-//             }); // This creates the model only when the user has initiated the conversation with the bot. This method uses a parameter called 'upsert' that will be checking  which is created if it's not there and if its there then it will be simply updated.
-
-//                   // STATING THE REPLY FROM THE BOT -> USER
-//                   await ctx.reply(
-//                         `Hey there! ${from.first_name}😁, Welcome to this chat💭. I will be your host and guide in writing all your social-media posts✍🏻.\nLet me know what are you upto or what have you already done and I will be considering everything while creating the best post for you🧭.\nLet's get viral on social media.🧲`
-//                   );
-//       } catch(err) {
-//             // LOGGING THE ERROR 
-//             console.log(err);
-//             await ctx.reply(
-//                   `Well ${from.first_name} I am having trouble chatting with you right now 🤧! Developer is sleeping 🥴.`
-//             )
-//       }
-
-
-//       //  DEBUG CONSOLE 
-//       console.log('ctx', ctx);
-//       console.log('from', from);
-
-// });
-
+// INITIATION OF THE BOT AUTOMATION
 bot.start(async (ctx) => {
 
       // SAVING THE USER INFORMATION FROM THE CONTEXT 
@@ -126,10 +82,11 @@ bot.action('show_menu', async (ctx) => {
 
       await ctx.reply(`Here are the available commands, ${from.first_name} 📜:`,
             Markup.inlineKeyboard([
-                  // [Markup.button.callback('/start', 'start_command')],
+                  [Markup.button.callback('START', 'start_command')],
                   [Markup.button.callback('HELP', 'help_command')],
                   [Markup.button.callback('GENERATE', 'generate_command')],
                   [Markup.button.callback('RESET', 'reset_command')],
+                  [Markup.button.callback('STOP', 'stop_command')],
                   [Markup.button.callback('❌', 'hide_menu')]
             ])
       );
@@ -137,20 +94,16 @@ bot.action('show_menu', async (ctx) => {
 
 // HANDLING INDIVIDUAL COMMAND BUTTON CLICKS
 bot.action('start_command', async (ctx) => {
-      await ctx.reply('/start - Start the bot');
-});
-
-bot.action('help_command', async (ctx) => {
-      await ctx.reply('/help - Show help information');
+      await ctx.reply('/start - Start the bot!');
 });
 
 bot.action('generate_command', async (ctx) => {
-      await ctx.reply('/generate - Generate a post');
+      await ctx.reply('/generate - Generate a post!');
 });
 
-bot.action('reset_command', async (ctx) => {
-      await ctx.reply('/reset - Reset all events');
-});
+bot.action('stop', async (ctx) => {
+      await ctx.reply('/stop - Stop the bot!')
+})
 
 // HANDLING THE INLINE BUTTON CLICK TO HIDE MENU
 bot.action('hide_menu', async (ctx) => {
@@ -168,7 +121,8 @@ bot.command('help', async(ctx) => {
       STEP 2 : You will be given a menu in which a list of commands are provide to work with 📜. \n
       STEP 3 : Once I am ready you can start sharing your thoughts and I will write it down in my personal diary ✍️.\n
       STEP 3 : Once you are all caught up just type the command /generate 🚀.\n
-      STEP 4 : Grab a candy and just get ready to copy and paste 😉.`)
+      STEP 4 : Grab a candy and just get ready to copy and paste 😉. \n
+      STEP 5 : Use the /stop command whenever you want to take rest. 🥹`)
 });
 
 // RESET COMMAND : /reset FOR RESETTING ALL USER EVENTS
@@ -192,6 +146,27 @@ bot.command('reset', async (ctx) => {
 
       // DEBUGGING
       console.log('reset command invoked by', from);
+});
+
+
+// STOP COMMAND : /stop FOR STOPPING THE BOT
+bot.command('stop', async (ctx) => {
+      const from = ctx.update.message.from;
+
+      try {
+            // CONFIRMATION MESSAGE
+            await ctx.reply(`Goodbye ${from.first_name} 👋!`);
+            await bot.stop(); // Stop the bot
+            process.exit(); // Exit the process
+      } catch (err) {
+            console.log(err);
+            await ctx.reply(
+                  `Sorry ${from.first_name}, I'm having trouble stopping the bot right now 🤧! Developer is sleeping 🥴.`
+            );
+      }
+
+      // DEBUGGING
+      console.log('stop command invoked by', from);
 });
 
 
@@ -300,8 +275,6 @@ bot.command('generate', async(ctx) => {
             // INITIATING THE ASYNC FUNCTION THROUGH THE run() FUNCTION.
             run();
 });
-
-
 
 
 // LOWER ORDER ~ Priority value is less then the commands
